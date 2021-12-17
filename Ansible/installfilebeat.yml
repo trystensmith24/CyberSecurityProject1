@@ -1,0 +1,34 @@
+---
+
+ - name: Install Filebeat on Webservers
+   hosts: webservers
+   remote_user: azadmin
+   become: true
+   tasks:
+
+     - name: copy Filebeat installer to VM
+       copy:
+         src: /etc/ansible/filebeat-7.6.1-amd64.deb
+         dest: /var/cache/apt/archives
+
+     - name: download Filebeat
+       command: sudo dpkg -i /var/cache/apt/archives/filebeat-7.6.1-amd64.deb
+
+     - name: copy Filebeat config
+       copy:
+         src: /etc/ansible/filebeat-config.yml
+         dest: /etc/filebeat/filebeat.yml
+
+     - name: enable filebeat
+       command: filebeat modules enable system
+     
+     - name: run Filebeat setup
+       command: filebeat setup
+
+     - name: start Filebeat
+       command: service filebeat start
+
+     - name: enable Filebeat on boot
+       systemd:
+         name: filebeat
+         enabled: yes
